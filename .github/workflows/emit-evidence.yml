@@ -12,15 +12,84 @@ jobs:
           schemaVersion: omion.evidence.v1
           evidenceId: evpkg_manual_phase0a_01
           generatedAt: deterministic:manual-phase-0a
+          producer:
+            name: omion-lens
+            mode: manual-contract-sample
+            toolchainMode: manual
+            networkAccess: none
+            containsRawCode: false
+          repository:
+            provider: github
+            repositoryId: repo_7f3a
+            commit: commit_9c2d
+            branch: main
+            repositoryTotalFiles: 42
+            selectedFiles: 12
+            sourceFingerprint: sha256:manual_demo_fingerprint
+          privacy:
+            anonymized: true
+            mappingLocation: client_github_secrets
+            rawCodeForbidden: true
+            allowedPayload:
+              - file
+              - lineStart
+              - lineEnd
+              - symbolId
+              - componentId
+              - relationId
+              - ruleId
+              - tool
+              - confidence
+              - snippetHash
+            forbiddenPayload:
+              - snippet
+              - lineText
+              - sourceText
+              - functionBody
+              - rawContent
+              - markdownBody
+              - configContent
+          system:
+            id: sys_7f3a
+            name: anonymized-system
+            detailLevel: structural
+            graphType: mixed_structural_and_semantic
           components:
+            - id: cmp_frontend_7f3a
+              stableHash: sha256:cmp_frontend_7f3a
+              family: frontend
+              kind: web_frontend
+              role: user_interface
+              businessRole: Interface utilisateur
+              technicalRole: Application web cliente
+              classification:
+                status: high_confidence
+                method: structural
+                evidence:
+                  - ev_frontend_import_01
+              provenance:
+                - evidenceId: ev_frontend_import_01
+                  file: src/frontend/App.tsx
+                  lineStart: 1
+                  lineEnd: 12
+                  rule: frontend.react_component
+                  tool: omion-lens.static
+                  confidence: high
+                  snippetHash: sha256:front_01
             - id: cmp_api_1a2b
+              stableHash: sha256:cmp_api_1a2b
               family: api
+              kind: http_api
+              role: request_entrypoint
               businessRole: API métier
               technicalRole: Contrôleur HTTP
               classification:
                 status: high_confidence
+                method: structural
+                evidence:
+                  - ev_api_route_01
               provenance:
-                - evidenceId: ev_api_01
+                - evidenceId: ev_api_route_01
                   file: src/backend/controllers/order_controller.ts
                   lineStart: 18
                   lineEnd: 52
@@ -28,14 +97,41 @@ jobs:
                   tool: omion-lens.semgrep
                   confidence: high
                   snippetHash: sha256:api_01
-            - id: cmp_db_92ac
-              family: data
-              businessRole: Base de données métier
-              technicalRole: Stockage relationnel
+            - id: cmp_auth_3d9e
+              stableHash: sha256:cmp_auth_3d9e
+              family: security
+              kind: auth_service
+              role: authentication
+              businessRole: Authentification
+              technicalRole: Service de validation d'identité et de jetons
               classification:
                 status: high_confidence
+                method: structural
+                evidence:
+                  - ev_auth_oauth_01
               provenance:
-                - evidenceId: ev_db_01
+                - evidenceId: ev_auth_oauth_01
+                  file: src/backend/security/oauth_provider.ts
+                  lineStart: 10
+                  lineEnd: 44
+                  rule: security.oauth_provider
+                  tool: omion-lens.semgrep
+                  confidence: high
+                  snippetHash: sha256:auth_01
+            - id: cmp_db_92ac
+              stableHash: sha256:cmp_db_92ac
+              family: data
+              kind: relational_database
+              role: persistent_storage
+              businessRole: Base de données métier
+              technicalRole: Stockage relationnel des entités principales
+              classification:
+                status: high_confidence
+                method: structural
+                evidence:
+                  - ev_db_repo_01
+              provenance:
+                - evidenceId: ev_db_repo_01
                   file: src/backend/repositories/order_repository.ts
                   lineStart: 7
                   lineEnd: 80
@@ -43,13 +139,228 @@ jobs:
                   tool: omion-lens.semgrep
                   confidence: high
                   snippetHash: sha256:db_01
+            - id: cmp_queue_a81f
+              stableHash: sha256:cmp_queue_a81f
+              family: integration
+              kind: message_queue
+              role: async_messaging
+              businessRole: File d'événements
+              technicalRole: Bus de messages pour traitement asynchrone
+              classification:
+                status: high_confidence
+                method: structural
+                evidence:
+                  - ev_queue_emit_01
+              provenance:
+                - evidenceId: ev_queue_emit_01
+                  file: src/backend/events/order_events.ts
+                  lineStart: 12
+                  lineEnd: 40
+                  rule: messaging.event_publish
+                  tool: omion-lens.semgrep
+                  confidence: high
+                  snippetHash: sha256:queue_01
+            - id: cmp_storage_b74d
+              stableHash: sha256:cmp_storage_b74d
+              family: storage
+              kind: object_storage
+              role: file_storage
+              businessRole: Stockage de documents
+              technicalRole: Bucket de fichiers applicatifs
+              classification:
+                status: medium_confidence
+                method: structural
+                evidence:
+                  - ev_storage_write_01
+              provenance:
+                - evidenceId: ev_storage_write_01
+                  file: src/backend/storage/document_storage.ts
+                  lineStart: 20
+                  lineEnd: 64
+                  rule: storage.object_write
+                  tool: omion-lens.semgrep
+                  confidence: medium
+                  snippetHash: sha256:storage_01
+            - id: cmp_obs_5c12
+              stableHash: sha256:cmp_obs_5c12
+              family: observability
+              kind: logging_metrics
+              role: diagnostics
+              businessRole: Observabilité
+              technicalRole: Logs et métriques applicatives
+              classification:
+                status: medium_confidence
+                method: structural
+                evidence:
+                  - ev_obs_log_01
+              provenance:
+                - evidenceId: ev_obs_log_01
+                  file: src/backend/observability/logger.ts
+                  lineStart: 4
+                  lineEnd: 25
+                  rule: observability.logger
+                  tool: omion-lens.static
+                  confidence: medium
+                  snippetHash: sha256:obs_01
           relations:
+            - id: rel_frontend_calls_api
+              source: cmp_frontend_7f3a
+              target: cmp_api_1a2b
+              kind: calls
+              businessLabel: appelle
+              technicalLabel: HTTP request
+              confidence: high
+              evidence:
+                - evidenceId: ev_rel_frontend_api_01
+                  file: src/frontend/api/orders.ts
+                  lineStart: 14
+                  lineEnd: 32
+                  rule: relation.http_client_call
+                  tool: omion-lens.semgrep
+                  confidence: high
+                  snippetHash: sha256:rel_01
+            - id: rel_api_protects_auth
+              source: cmp_api_1a2b
+              target: cmp_auth_3d9e
+              kind: protects
+              businessLabel: sécurise via
+              technicalLabel: authentication guard
+              confidence: high
+              evidence:
+                - evidenceId: ev_rel_api_auth_01
+                  file: src/backend/controllers/order_controller.ts
+                  lineStart: 18
+                  lineEnd: 24
+                  rule: relation.auth_guard
+                  tool: omion-lens.semgrep
+                  confidence: high
+                  snippetHash: sha256:rel_02
             - id: rel_api_reads_db
               source: cmp_api_1a2b
               target: cmp_db_92ac
               kind: reads
               businessLabel: lit les données depuis
+              technicalLabel: repository read
               confidence: high
+              evidence:
+                - evidenceId: ev_rel_api_db_read_01
+                  file: src/backend/services/order_service.ts
+                  lineStart: 30
+                  lineEnd: 45
+                  rule: relation.repository_read
+                  tool: omion-lens.joern
+                  confidence: high
+                  snippetHash: sha256:rel_03
+            - id: rel_api_writes_db
+              source: cmp_api_1a2b
+              target: cmp_db_92ac
+              kind: writes
+              businessLabel: écrit les données dans
+              technicalLabel: repository write
+              confidence: high
+              evidence:
+                - evidenceId: ev_rel_api_db_write_01
+                  file: src/backend/services/order_service.ts
+                  lineStart: 47
+                  lineEnd: 72
+                  rule: relation.repository_write
+                  tool: omion-lens.joern
+                  confidence: high
+                  snippetHash: sha256:rel_04
+            - id: rel_api_emits_queue
+              source: cmp_api_1a2b
+              target: cmp_queue_a81f
+              kind: emits
+              businessLabel: publie un événement vers
+              technicalLabel: event publish
+              confidence: high
+              evidence:
+                - evidenceId: ev_rel_api_queue_01
+                  file: src/backend/events/order_events.ts
+                  lineStart: 12
+                  lineEnd: 40
+                  rule: relation.event_publish
+                  tool: omion-lens.semgrep
+                  confidence: high
+                  snippetHash: sha256:rel_05
+            - id: rel_api_writes_storage
+              source: cmp_api_1a2b
+              target: cmp_storage_b74d
+              kind: writes
+              businessLabel: stocke des fichiers dans
+              technicalLabel: object storage write
+              confidence: medium
+              evidence:
+                - evidenceId: ev_rel_api_storage_01
+                  file: src/backend/storage/document_storage.ts
+                  lineStart: 20
+                  lineEnd: 64
+                  rule: relation.object_storage_write
+                  tool: omion-lens.semgrep
+                  confidence: medium
+                  snippetHash: sha256:rel_06
+            - id: rel_api_observed_by_obs
+              source: cmp_api_1a2b
+              target: cmp_obs_5c12
+              kind: observes
+              businessLabel: est observé par
+              technicalLabel: logs and metrics
+              confidence: medium
+              evidence:
+                - evidenceId: ev_rel_api_obs_01
+                  file: src/backend/observability/logger.ts
+                  lineStart: 4
+                  lineEnd: 25
+                  rule: relation.logging
+                  tool: omion-lens.static
+                  confidence: medium
+                  snippetHash: sha256:rel_07
+          deepFindings:
+            - id: finding_auth_guard_present
+              componentId: cmp_api_1a2b
+              file: src/backend/controllers/order_controller.ts
+              line: 18
+              symbolId: sym_controller_81aa
+              finding: endpoint_protected_by_auth_guard
+              ruleId: security.auth_guard_present
+              severity: info
+              confidence: high
+              snippetHash: sha256:find_01
+            - id: finding_db_repository_access
+              componentId: cmp_db_92ac
+              file: src/backend/repositories/order_repository.ts
+              line: 22
+              symbolId: sym_repository_42cb
+              finding: repository_access_detected
+              ruleId: data.repository_access
+              severity: info
+              confidence: high
+              snippetHash: sha256:find_02
+            - id: finding_event_publish
+              componentId: cmp_queue_a81f
+              file: src/backend/events/order_events.ts
+              line: 27
+              symbolId: sym_event_publisher_f39c
+              finding: domain_event_published
+              ruleId: messaging.event_publish
+              severity: info
+              confidence: high
+              snippetHash: sha256:find_03
+            - id: finding_storage_write
+              componentId: cmp_storage_b74d
+              file: src/backend/storage/document_storage.ts
+              line: 35
+              symbolId: sym_storage_writer_a22e
+              finding: object_storage_write_detected
+              ruleId: storage.object_write
+              severity: info
+              confidence: medium
+              snippetHash: sha256:find_04
+          validationHints:
+            noRawCodePayloadExpected: true
+            documentationAsContextOnly: true
+            aiUsed: false
+            graphCanBeBuiltWithoutSourceCode: true
           OMION_EOF
       - name: Upload evidence artifact
         uses: actions/upload-artifact@v4
