@@ -1,0 +1,58 @@
+name: emit-evidence
+on:
+  workflow_dispatch:
+jobs:
+  emit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write evidence.yaml
+        run: |
+          mkdir -p out
+          cat > out/evidence.yaml <<'OMION_EOF'
+          schemaVersion: omion.evidence.v1
+          evidenceId: evpkg_manual_phase0a_01
+          generatedAt: deterministic:manual-phase-0a
+          components:
+            - id: cmp_api_1a2b
+              family: api
+              businessRole: API métier
+              technicalRole: Contrôleur HTTP
+              classification:
+                status: high_confidence
+              provenance:
+                - evidenceId: ev_api_01
+                  file: src/backend/controllers/order_controller.ts
+                  lineStart: 18
+                  lineEnd: 52
+                  rule: api.http_route
+                  tool: omion-lens.semgrep
+                  confidence: high
+                  snippetHash: sha256:api_01
+            - id: cmp_db_92ac
+              family: data
+              businessRole: Base de données métier
+              technicalRole: Stockage relationnel
+              classification:
+                status: high_confidence
+              provenance:
+                - evidenceId: ev_db_01
+                  file: src/backend/repositories/order_repository.ts
+                  lineStart: 7
+                  lineEnd: 80
+                  rule: data.repository_access
+                  tool: omion-lens.semgrep
+                  confidence: high
+                  snippetHash: sha256:db_01
+          relations:
+            - id: rel_api_reads_db
+              source: cmp_api_1a2b
+              target: cmp_db_92ac
+              kind: reads
+              businessLabel: lit les données depuis
+              confidence: high
+          OMION_EOF
+      - name: Upload evidence artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence
+          path: out/evidence.yaml
